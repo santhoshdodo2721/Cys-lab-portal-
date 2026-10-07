@@ -334,3 +334,5 @@
 }
 
 .detail-description{white-space:pre-wrap;overflow-wrap:anywhere}
+
+.achievement-photo{display:block;width:100%;max-height:480px;object-fit:contain;border-radius:8px;background:#f0f3f2}.member-qualification,.certificate-link{display:block;margin-top:4px;font-size:12px}.member-qualification{color:var(--muted)}.certificate-link,.upload-actions a{color:var(--blue);text-decoration:underline}.upload-field{min-width:0}.upload-field>small{display:block;margin-top:6px;color:var(--muted);font-size:12px}.upload-actions{display:flex;align-items:center;gap:14px;margin-top:8px;font-size:13px}.member-form-row .upload-field{grid-column:1 / -1}

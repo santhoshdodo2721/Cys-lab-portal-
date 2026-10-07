@@ -74,3 +74,7 @@ For a hosted MongoDB database such as Atlas:
 4. Have teammates manage content through the deployed admin page. Local development should use a separate database unless you intentionally want local edits to affect the live website.
 
 See [MongoDB Atlas application connection setup](https://www.mongodb.com/docs/atlas/driver-connection/). The connection string belongs only on the backend. `.env` is ignored by Git. Setting up this configuration does not create a hosted database or publish the website automatically.
+
+## Achievement attachments and custom values
+
+Project guides support an optional qualification. Achievement event names can reuse an existing event name or use Custom; ranks support I, II, III and custom text. Photographs accept PNG, JPEG and WebP. Each member can optionally upload a certificate as a PDF or supported image, up to 5 MB per file. Files are stored in MongoDB GridFS (`attachments.files` and `attachments.chunks`), uploaded only by admins, and readable by visitors through the API. Include these collections in database backups. Removing a file from a form removes its reference; the stored upload is retained.
