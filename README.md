@@ -16,7 +16,7 @@ docker compose up --build
 
 Open **http://localhost:5173**. The home page introduces the lab with CVE, Achievement, and Project links at the top. These sections are public and require no sign-in. The login form appears only at `/lab-portal/admin`. Open **http://localhost:5173/lab-portal/admin** to manage content; for the local demo, use `admin@lab.local` / `admin-demo-password`. The frontend, API, and MongoDB run side by side. The API is also available at `http://localhost:4000`.
 
-The seed runs automatically on API startup. It creates the admin only if the admin role does not exist, and inserts sample records only into empty collections. Sample CVE numbers and external profile/repository URLs are illustrative demo content, not claims of published vulnerabilities or real people.
+Startup creates the first admin from configured environment values if no admin exists. No sample content is inserted. Projects, CVEs, and achievements are created through the CMS; deleting entries will not restore them on restart. Existing sample records remain until an admin deletes them.
 
 For any shared or production deployment, set `JWT_SECRET` and `ADMIN_PASSWORD` in a root `.env` file before first startup. Use long unique values. Existing account passwords are not overwritten by later environment changes; update them directly in MongoDB or recreate the local demo volume. Serve the frontend over HTTPS and configure `CLIENT_ORIGIN` and secure cookies for the deployed origin.
 
@@ -47,7 +47,15 @@ lab-portal/
         ├── index.js             # JWT cookie auth and protected CRUD API
         ├── models.js            # MongoDB data models
         ├── validation.js        # input and URL validation
-        └── seed.js              # demo users and sample records
+        └── seed.js              # first-admin setup only
 ```
 
 Authentication uses a signed JWT in an HTTP-only cookie, bcrypt password hashes, login rate limiting, and server-side role checks. Content reads and live updates are public. Admin login and every create, update, and delete API require admin access. Existing viewer accounts cannot sign in. External links use `target="_blank"` with `rel="noopener noreferrer"`.
+
+## Database and admin access
+
+MongoDB keeps four collections: `users`, `projects`, `cves`, and `achievements`. Team members and project guides are embedded in each entry; the same person and CVE number can appear in multiple entries. Entries have creation and update timestamps, field validation, optional-field defaults, and indexes for archive ordering and CVE lookup. Projects and CVEs use one full description; the API derives the short card preview.
+
+Admins manage entries through `/lab-portal/admin`. Public visitors can read published entries but cannot create, update, or delete them. MongoDB is on Docker's internal network and has no host port exposed. This local configuration grants the API database access; it does not provide separate MongoDB accounts for human administrators.
+
+Content is stored in the persistent `mongo_data` volume, independently of Git. A deletion through the admin panel updates open pages. A deletion performed directly in MongoDB appears after refreshing the page. Neither action edits the repository or pushes to GitHub. Database backups must be managed separately from source-code commits; do not commit database dumps or credentials.

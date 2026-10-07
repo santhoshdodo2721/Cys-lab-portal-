@@ -91,7 +91,8 @@ app.delete('/api/:kind/:id', auth, admin, async (req, res) => {
 });
 app.use((err, _req, res, _next) => { console.error(err); res.status(500).json({ error: 'Something went wrong. Please try again.' }); });
 
-await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/lab-portal');
+if (!process.env.MONGODB_URI) throw new Error('Set MONGODB_URI before starting the application.');
+await mongoose.connect(process.env.MONGODB_URI);
 // Retire the old CVE-number constraint without changing existing entries.
 try {
   const indexes = await Cve.collection.indexes();
