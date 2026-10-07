@@ -1,0 +1,38 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  server:
+    build: ./server
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/lab-portal
+      JWT_SECRET: ${JWT_SECRET:-development-secret-change-this-before-production-12345}
+      CLIENT_ORIGIN: http://localhost:5173
+      PORT: 4000
+      ADMIN_NAME: Lab Admin
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@lab.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin-demo-password}
+    ports:
+      - "4000:4000"
+  client:
+    build: ./client
+    restart: unless-stopped
+    depends_on:
+      - server
+    environment:
+      API_PROXY_TARGET: http://server:4000
+    ports:
+      - "5173:5173"
+volumes:
+  mongo_data:
