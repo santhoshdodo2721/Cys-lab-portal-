@@ -92,4 +92,11 @@ app.delete('/api/:kind/:id', auth, admin, async (req, res) => {
 app.use((err, _req, res, _next) => { console.error(err); res.status(500).json({ error: 'Something went wrong. Please try again.' }); });
 
 await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/lab-portal');
+// Retire the old CVE-number constraint without changing existing entries.
+try {
+  const indexes = await Cve.collection.indexes();
+  for (const index of indexes) {
+    if (index.unique && Object.keys(index.key).length === 1 && index.key.cveNumber === 1) await Cve.collection.dropIndex(index.name);
+  }
+} catch (error) { if (error.code !== 26) throw error; }
 app.listen(Number(process.env.PORT || 4000), () => console.log(`Lab Portal API on port ${process.env.PORT || 4000}`));
