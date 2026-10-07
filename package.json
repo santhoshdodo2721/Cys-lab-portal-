@@ -1,0 +1,1 @@
+{"name":"lab-portal","private":true,"scripts":{"dev":"concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"","install:all":"npm install && npm --prefix server install && npm --prefix client install","seed":"npm --prefix server run seed","build":"npm --prefix client run build"},"devDependencies":{"concurrently":"^9.2.1"}}
