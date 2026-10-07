@@ -59,3 +59,5 @@ MongoDB keeps four collections: `users`, `projects`, `cves`, and `achievements`.
 Admins manage entries through `/lab-portal/admin`. Public visitors can read published entries but cannot create, update, or delete them. MongoDB is on Docker's internal network and has no host port exposed. This local configuration grants the API database access; it does not provide separate MongoDB accounts for human administrators.
 
 Content is stored in the persistent `mongo_data` volume, independently of Git. A deletion through the admin panel updates open pages. A deletion performed directly in MongoDB appears after refreshing the page. Neither action edits the repository or pushes to GitHub. Database backups must be managed separately from source-code commits; do not commit database dumps or credentials.
+
+The admin entry route `/lab-portal/admin` always displays the login form. Successful sign-in opens `/lab-portal/admin/dashboard`; refreshing that dashboard restores a valid session, while an expired session shows login.
