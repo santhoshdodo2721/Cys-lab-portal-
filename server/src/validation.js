@@ -11,7 +11,7 @@ const person = z.object({ name: clean(120), linkedinUrl: optionalUrl(linkedin) }
 const guide = z.object({ name: clean(120), profileUrl: optionalUrl(linkedin) });
 const profile = z.object({ name: clean(120), profileUrl: linkedin });
 export const schemas = {
-  projects: z.object({ name: clean(160), shortDescription: clean(240), fullDescription: multiline(), domain: clean(120), techStack: z.array(clean(80)).max(20).optional().default([]), ip: z.string().trim().max(100).refine(s => !/[<>\u0000-\u001f]/.test(s)).optional().default(''), githubUrl: github, members: z.array(person).min(1).max(30), guide: guide }),
-  cves: z.object({ applicationName: clean(160).or(z.literal('')).optional().default(''), cveNumber: z.string().trim().regex(/^CVE-\d{4}-\d{4,}$/i, 'Use CVE-YYYY-NNNN'), shortDescription: clean(240), fullDescription: multiline(), githubUrl: optionalUrl(github), members: z.array(person).min(1).max(30) }),
+  projects: z.object({ name: clean(160), fullDescription: multiline(), domain: clean(120), techStack: z.array(clean(80)).max(20).optional().default([]), ip: z.string().trim().max(100).refine(s => !/[<>\u0000-\u001f]/.test(s)).optional().default(''), githubUrl: github, members: z.array(person).min(1).max(30), guide: guide }).transform(data => ({ ...data, shortDescription: data.fullDescription.slice(0, 240) })),
+  cves: z.object({ applicationName: clean(160).or(z.literal('')).optional().default(''), cveNumber: z.string().trim().regex(/^CVE-\d{4}-\d{4,}$/i, 'Use CVE-YYYY-NNNN'), fullDescription: multiline(), githubUrl: optionalUrl(github), members: z.array(person).min(1).max(30) }).transform(data => ({ ...data, shortDescription: data.fullDescription.slice(0, 240) })),
   achievements: z.object({ eventName: clean(160), eventType: z.enum(['CTF', 'Hackathon', 'Conference', 'Other']), prize: clean(160), place: z.coerce.number().int().min(1).max(3), description: multiline(), members: z.array(profile).min(1).max(30) })
 };
