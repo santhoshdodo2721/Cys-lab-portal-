@@ -1,4 +1,4 @@
-# Lab Portal · Incognitrix Lab
+# Lab Portal · Cyber Research Lab
 
 This portal showcases work from the SIET Cloud Computing and Cyber Security Research Lab at Sri Shakthi Institute of Engineering and Technology. The Incognitrix logo supplied for this project is stored at `client/public/incognitrix-logo.png`. The institute crest is stored separately at `client/public/siet-crest.jpg`; its source is the [SIET college listing](https://dial4college.com/college/sri-shakthi-institute-of-engineering-technology-siet-coimbatore).
 

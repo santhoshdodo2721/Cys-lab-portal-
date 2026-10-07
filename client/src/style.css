@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 :root{font-family:'Source Sans 3',sans-serif;color:#263b45;background:#f4f6f6;font-synthesis:none;--ink:#263b45;--muted:#667c86;--blue:#21566c;--blue-dark:#183e50;--line:#d3dee1;--canvas:#f4f6f6;--surface:#fff;--mono:'IBM Plex Mono',monospace}
 *{box-sizing:border-box}body{margin:0;min-width:320px}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}a{color:inherit;text-decoration:none}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #b65e43;outline-offset:3px}
 .boot{min-height:100vh;display:grid;place-content:center;justify-items:center;gap:12px;color:var(--blue)}.boot svg{width:30px;height:30px}
@@ -305,3 +305,30 @@
 .admin-archive .heading-actions .button.primary{color:#fff;background:var(--blue);border-color:var(--blue)}
 .admin-archive .heading-actions .button.secondary{color:#194b52;background:#fff;border-color:#c8d6da}
 @media(max-width:600px){.admin-session-bar{align-items:flex-start;flex-direction:column;padding:12px 20px;gap:10px}}
+
+@media(min-width:761px) and (max-width:1100px){.login-main:not(.public-landing-main){grid-template-columns:minmax(0,1fr);gap:40px}.login-main:not(.public-landing-main) .login-panel{width:100%;max-width:470px}}
+
+.login-context .lab-name{font-family:'Source Sans 3',sans-serif;font-size:clamp(26px,5.2vw,72px);font-weight:600;line-height:1.15;letter-spacing:-.035em;white-space:nowrap;color:#194b52}
+.public-landing-main .login-context{width:100%;max-width:850px}
+.login-main:not(.public-landing-main) .lab-name{font-size:clamp(26px,3.4vw,48px)}
+@media(min-width:761px) and (max-width:1100px){.login-main:not(.public-landing-main){grid-template-columns:minmax(0,1fr);gap:40px}.login-main:not(.public-landing-main) .login-panel{width:100%;max-width:470px}}
+@media(max-width:760px){.login-context .lab-name,.login-main:not(.public-landing-main) .lab-name{font-size:clamp(25px,6.6vw,49px)}}
+
+/* Reference hero: centered identity on a light canvas. */
+.public-landing-main{position:relative;width:100%;max-width:none;margin:0;padding:60px 24px 70px;background:var(--canvas);overflow:hidden}
+.public-landing-main::before{content:'';position:absolute;inset:0;background:url('/incognitrix-emblem.png') center/auto 105% no-repeat;opacity:.045;pointer-events:none}
+.public-landing-main .login-context{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;max-width:1000px;margin:0 auto;text-align:center}
+.public-landing-main .login-context-logo{width:128px;height:auto;margin:0 auto 34px}
+.public-landing-main .login-context-label{margin:0 0 20px;font-family:var(--mono);font-size:13px;font-weight:500;line-height:1.6;color:#829aa3}
+.public-landing-main .lab-name{max-width:none;margin:0;font-family:'Source Sans 3',sans-serif;font-size:clamp(30px,7.4vw,100px);font-weight:700;line-height:1.12;letter-spacing:-.04em;white-space:nowrap;color:#194b52}
+.public-landing-main .login-context p{max-width:690px;margin:28px auto 0;font-size:19px;line-height:1.75;color:#788f99}
+.login-page:has(.public-landing-main) .login-background-logo{display:none}
+.login-page:has(.public-landing-main) .login-footer{background:var(--canvas);color:#8ca0a6}
+@media(max-width:760px){
+ .public-landing-main{padding:48px 20px 56px}
+ .public-landing-main .login-context-logo{width:98px;margin-bottom:28px}
+ .public-landing-main .login-context-label{font-size:11px;max-width:400px;margin-bottom:18px}
+ .public-landing-main .lab-name{font-size:clamp(26px,7.2vw,54px)}
+ .public-landing-main .login-context p{font-size:16px;margin-top:24px}
+ .public-landing-main::before{background-size:auto 90%}
+}
