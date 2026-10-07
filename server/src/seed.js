@@ -26,7 +26,7 @@ if (await Cve.countDocuments() === 0) await Cve.insertMany([
 if (await Achievement.countDocuments() === 0) await Achievement.insertMany([
   { eventName: 'CyberSprint CTF', eventType: 'CTF', prize: '₹25,000', place: 1, description: 'The lab team placed first after solving web, crypto, and forensics challenges across a 24-hour competition.', members: people.map(p => ({ name: p.name, profileUrl: p.linkedinUrl })) },
   { eventName: 'SecureBuild Hackathon', eventType: 'Hackathon', prize: 'Innovation award', place: 2, description: 'A prototype for accessible threat reporting earned second place at the inter-college hackathon.', members: people.slice(0, 1).map(p => ({ name: p.name, profileUrl: p.linkedinUrl })) },
-  { eventName: 'Blue Team Challenge', eventType: 'Competition', prize: 'Finalist certificate', place: 4, description: 'Students investigated simulated incidents and finished among the top finalists.', members: people.map(p => ({ name: p.name, profileUrl: p.linkedinUrl })) }
+  { eventName: 'Blue Team Challenge', eventType: 'Other', prize: 'Finalist certificate', place: 3, description: 'Students investigated simulated incidents and finished among the top finalists.', members: people.map(p => ({ name: p.name, profileUrl: p.linkedinUrl })) }
 ]);
 console.log('Seed complete');
 await mongoose.disconnect();
