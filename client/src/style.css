@@ -332,3 +332,5 @@
  .public-landing-main .login-context p{font-size:16px;margin-top:24px}
  .public-landing-main::before{background-size:auto 90%}
 }
+
+.detail-description{white-space:pre-wrap;overflow-wrap:anywhere}
