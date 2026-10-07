@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { User, Project, Cve, Achievement } from './models.js';
 import { schemas } from './validation.js';
+import { registerUploads } from './uploads.js';
 
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be at least 32 characters');
 const app = express();
@@ -47,6 +48,7 @@ app.get('/api/auth/me', auth, async (req, res) => {
   if (!user || user.role !== req.identity.role) return res.status(401).json({ error: 'Please sign in again.' });
   res.json({ user });
 });
+registerUploads(app, auth, admin);
 const collections = { projects: Project, cves: Cve, achievements: Achievement };
 const listeners = new Set();
 function publish(kind) { for (const res of listeners) res.write(`data: ${JSON.stringify({ kind })}\n\n`); }
@@ -89,7 +91,7 @@ app.delete('/api/:kind/:id', auth, admin, async (req, res) => {
   publish(req.params.kind);
   res.json({ ok: true });
 });
-app.use((err, _req, res, _next) => { console.error(err); res.status(500).json({ error: 'Something went wrong. Please try again.' }); });
+app.use((err, _req, res, _next) => { if (err.type === 'entity.too.large') return res.status(413).json({ error: 'The file is too large. Maximum upload size is 5 MB.' }); console.error(err); res.status(500).json({ error: 'Something went wrong. Please try again.' }); });
 
 if (!process.env.MONGODB_URI) throw new Error('Set MONGODB_URI before starting the application.');
 await mongoose.connect(process.env.MONGODB_URI);

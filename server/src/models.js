@@ -5,7 +5,9 @@ const optionalText = maxlength => ({ ...text(maxlength), default: '' });
 const member = new mongoose.Schema({
   name: text(120, true),
   linkedinUrl: optionalText(500),
-  profileUrl: optionalText(500)
+  profileUrl: optionalText(500),
+  qualification: optionalText(160),
+  certificateUrl: optionalText(100)
 }, { _id: false });
 const options = { timestamps: true, versionKey: false };
 const contentOptions = { ...options, strict: 'throw' };
@@ -43,8 +45,9 @@ const achievementSchema = new mongoose.Schema({
   eventName: text(160, true),
   eventType: { type: String, enum: ['CTF', 'Hackathon', 'Conference', 'Other'], required: true },
   prize: text(160, true),
-  place: { type: Number, min: 1, max: 3, required: true },
+  place: { type: mongoose.Schema.Types.Mixed, required: true },
   description: text(5000, true),
+  photographUrl: optionalText(100),
   members
 }, contentOptions);
 
