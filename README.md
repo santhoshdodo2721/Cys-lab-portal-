@@ -61,3 +61,16 @@ Admins manage entries through `/lab-portal/admin`. Public visitors can read publ
 Content is stored in the persistent `mongo_data` volume, independently of Git. A deletion through the admin panel updates open pages. A deletion performed directly in MongoDB appears after refreshing the page. Neither action edits the repository or pushes to GitHub. Database backups must be managed separately from source-code commits; do not commit database dumps or credentials.
 
 The admin entry route `/lab-portal/admin` always displays the login form. Successful sign-in opens `/lab-portal/admin/dashboard`; refreshing that dashboard restores a valid session, while an expired session shows login.
+
+## Shared team content
+
+Use one deployed API connected to one shared MongoDB database. Everyone visits the same website; admins publish content through `/lab-portal/admin`. The site already receives live updates from that API, so visitors see saved changes without pulling Git commits.
+
+For a hosted MongoDB database such as Atlas:
+
+1. Create the database deployment and an application database user, and allow network access from your API hosting server.
+2. Copy the project-root `.env.example` to `.env` and replace `MONGODB_URI` with the hosted connection string containing the `lab-portal` database name. Set the website origin and your own admin credentials and JWT secret.
+3. Deploy the website and API on your hosting server. Docker Compose now reads the shared database connection from `.env`; its local MongoDB service can remain unused when using the hosted connection.
+4. Have teammates manage content through the deployed admin page. Local development should use a separate database unless you intentionally want local edits to affect the live website.
+
+See [MongoDB Atlas application connection setup](https://www.mongodb.com/docs/atlas/driver-connection/). The connection string belongs only on the backend. `.env` is ignored by Git. Setting up this configuration does not create a hosted database or publish the website automatically.

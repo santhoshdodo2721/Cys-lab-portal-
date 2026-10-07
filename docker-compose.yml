@@ -16,9 +16,9 @@ services:
       mongodb:
         condition: service_healthy
     environment:
-      MONGODB_URI: mongodb://mongodb:27017/lab-portal
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/lab-portal}
       JWT_SECRET: ${JWT_SECRET:-development-secret-change-this-before-production-12345}
-      CLIENT_ORIGIN: http://localhost:5173
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:5173}
       PORT: 4000
       ADMIN_NAME: Lab Admin
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@lab.local}
