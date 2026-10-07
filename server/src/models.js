@@ -1,8 +1,57 @@
 import mongoose from 'mongoose';
 
-const member = new mongoose.Schema({ name: String, linkedinUrl: String, profileUrl: String }, { _id: false });
+const text = (maxlength, required = false) => ({ type: String, trim: true, maxlength, required });
+const optionalText = maxlength => ({ ...text(maxlength), default: '' });
+const member = new mongoose.Schema({
+  name: text(120, true),
+  linkedinUrl: optionalText(500),
+  profileUrl: optionalText(500)
+}, { _id: false });
 const options = { timestamps: true, versionKey: false };
-export const User = mongoose.model('User', new mongoose.Schema({ name: { type: String, required: true }, email: { type: String, required: true, unique: true, lowercase: true }, passwordHash: { type: String, required: true }, role: { type: String, enum: ['admin', 'viewer'], required: true } }, options));
-export const Project = mongoose.model('Project', new mongoose.Schema({ name: String, shortDescription: String, fullDescription: String, domain: String, techStack: [String], ip: String, githubUrl: String, members: [member], guide: member }, options));
-export const Cve = mongoose.model('Cve', new mongoose.Schema({ applicationName: { type: String, default: '' }, cveNumber: String, shortDescription: String, fullDescription: String, githubUrl: String, members: [member] }, options));
-export const Achievement = mongoose.model('Achievement', new mongoose.Schema({ eventName: String, eventType: String, prize: String, place: Number, description: String, members: [member] }, options));
+const contentOptions = { ...options, strict: 'throw' };
+const members = { type: [member], default: [] };
+
+const userSchema = new mongoose.Schema({
+  name: text(120, true),
+  email: { ...text(254, true), unique: true, lowercase: true },
+  passwordHash: { type: String, required: true },
+  role: { type: String, enum: ['admin', 'viewer'], required: true }
+}, options);
+
+const projectSchema = new mongoose.Schema({
+  name: text(160, true),
+  shortDescription: optionalText(240),
+  fullDescription: text(5000, true),
+  domain: text(120, true),
+  techStack: { type: [String], default: [] },
+  ip: optionalText(100),
+  githubUrl: text(500, true),
+  members,
+  guide: { type: member, required: true }
+}, contentOptions);
+
+const cveSchema = new mongoose.Schema({
+  applicationName: optionalText(160),
+  cveNumber: text(80, true),
+  shortDescription: optionalText(240),
+  fullDescription: text(5000, true),
+  githubUrl: optionalText(500),
+  members
+}, contentOptions);
+
+const achievementSchema = new mongoose.Schema({
+  eventName: text(160, true),
+  eventType: { type: String, enum: ['CTF', 'Hackathon', 'Conference', 'Other'], required: true },
+  prize: text(160, true),
+  place: { type: Number, min: 1, max: 3, required: true },
+  description: text(5000, true),
+  members
+}, contentOptions);
+
+for (const schema of [projectSchema, cveSchema, achievementSchema]) schema.index({ createdAt: -1 });
+cveSchema.index({ cveNumber: 1 });
+
+export const User = mongoose.model('User', userSchema);
+export const Project = mongoose.model('Project', projectSchema);
+export const Cve = mongoose.model('Cve', cveSchema);
+export const Achievement = mongoose.model('Achievement', achievementSchema);
