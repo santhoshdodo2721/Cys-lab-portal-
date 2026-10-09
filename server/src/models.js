@@ -27,7 +27,7 @@ const projectSchema = new mongoose.Schema({
   domain: text(120, true),
   techStack: { type: [String], default: [] },
   ip: optionalText(100),
-  githubUrl: text(500, true),
+  githubUrl: optionalText(500),
   members,
   guide: { type: member, required: true }
 }, contentOptions);
@@ -43,7 +43,7 @@ const cveSchema = new mongoose.Schema({
 
 const achievementSchema = new mongoose.Schema({
   eventName: text(160, true),
-  eventType: { type: String, enum: ['CTF', 'Hackathon', 'Conference', 'Other'], required: true },
+  eventType: text(120, true),
   prize: text(160, true),
   place: { type: mongoose.Schema.Types.Mixed, required: true },
   description: text(5000, true),
