@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ArrowLeft, ArrowRight, Award, BookOpen, Check, ChevronRight, CircleAlert, Code2, ExternalLink, Github, LockKeyhole, LogOut, Plus, Radar, Shield, ShieldCheck, Search, Trash2, Users, X } from 'lucide-react';
 import './style.css';
+import UploadField from './UploadField.jsx';
 import { translatedJsx, LanguageSelector, TranslationProvider } from './translation.jsx';
 
 const tabs = [
@@ -37,19 +38,6 @@ function DetailModal({ kind, item, onClose, onEdit, onDelete, admin }) {
   return <div className="modal-backdrop" onMouseDown={e => e.target === e.currentTarget && onClose()}><article className="detail-modal" role="dialog" aria-modal="true" aria-label={title}><div className="modal-nav"><button className="text-button" onClick={onClose}><ArrowLeft size={17}/> Back to {tabs.find(t => t.key === kind).label}</button><button className="icon-button" aria-label="Close" onClick={onClose}><X size={20}/></button></div><div className="detail-content"><div className="detail-kicker"><span className="live-dot"/> Lab / {tabs.find(t => t.key === kind).label}</div><div className="detail-heading">{kind === 'achievements' && <RankBadge place={item.place}/>}<h2>{title}</h2></div><p className="detail-description">{isProject || isCve ? item.fullDescription : item.description}</p>{isProject && <><div className="info-grid"><div><small>Domain</small><strong>{item.domain}</strong></div><div><small>Tech stack</small><strong>{item.techStack?.join(' · ') || 'Not specified'}</strong></div><div><small>IP address / details</small><strong>{item.ip || 'Not specified'}</strong></div></div>{item.githubUrl && <section className="detail-section"><h3><Github size={17}/> Repository</h3><Link href={item.githubUrl} icon>{item.githubUrl}</Link></section>}<MemberList members={item.members}/><MemberList members={item.guide ? [item.guide] : []} title="Guide"/></>}{isCve && <>{item.applicationName && <section className="detail-section"><h3>Application name</h3><p>{item.applicationName}</p></section>}{item.githubUrl && <section className="detail-section"><h3><Github size={17}/> GitHub repository</h3><Link href={item.githubUrl} icon>{item.githubUrl}</Link></section>}<MemberList members={item.members} title="Members"/></>}{kind === 'achievements' && <>{item.photographUrl && <section className="detail-section"><h3>Photograph</h3><img className="achievement-photo" src={item.photographUrl} alt={item.eventName}/></section>}<MemberList members={item.members}/></>} {admin && <div className="admin-actions"><button className="button secondary" onClick={onEdit}>Edit entry</button><button className="button danger" onClick={onDelete}><Trash2 size={16}/> Delete</button></div>}</div></article></div>;
 }
 function Field({ label, value, onChange, type = 'text', required = true, placeholder = '' }) { return <label className="field"><span>{label}</span><input type={type} value={value ?? ''} onChange={e => onChange(e.target.value)} required={required} placeholder={placeholder}/></label>; }
-function UploadField({ label, value, onChange, accept, onBusy }) {
-  const [busy, setBusy] = useState(false), [error, setError] = useState('');
-  const upload = async event => {
-    const file = event.target.files?.[0]; if (!file) return;
-    setError('');
-    if (!accept.split(',').includes(file.type) || file.size > 5 * 1024 * 1024) { setError('Choose an accepted file up to 5 MB.'); event.target.value = ''; return; }
-    setBusy(true); onBusy(1);
-    try { const result = await api('/files', { method: 'POST', headers: { 'Content-Type': file.type }, body: file }); onChange(result.url); }
-    catch (err) { setError(err.message); }
-    finally { setBusy(false); onBusy(-1); event.target.value = ''; }
-  };
-  return <div className="upload-field"><label className="field"><span>{label}</span><input type="file" accept={accept} onChange={upload} disabled={busy}/></label><small>{busy ? 'Uploading…' : 'Maximum 5 MB per file'}</small>{value && <div className="upload-actions"><a href={value} target="_blank" rel="noopener noreferrer">View uploaded file</a><button type="button" className="text-button" disabled={busy} onClick={() => onChange('')}>Remove</button></div>}{error && <p className="error">{error}</p>}</div>;
-}
 function AdminForm({ kind, record, onClose, onSaved, eventNames = [] }) {
   useDialog(onClose);
   const [form, setForm] = useState(() => record ? { ...record, techStack: record.techStack?.join(', ') || '', ...(kind === 'achievements' ? { eventType: record.eventType || '', place: record.place ?? '' } : {}) } : structuredClone(empty[kind]));

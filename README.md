@@ -90,3 +90,7 @@ Requests are batched, cached in memory, rate limited, and capped by `TRANSLATION
 ### Gemini alternative
 
 Create an API key in [Google AI Studio](https://aistudio.google.com/apikey), set `GEMINI_API_KEY` in the root `.env` (Docker) or `server/.env` (local), and recreate the server. Gemini takes priority over Cloud Translation when both keys are present. `GEMINI_TRANSLATION_MODEL` defaults to `gemini-3.1-flash-lite` and can be changed to a compatible model available to your account. Translation quality varies across regional languages. The same request limits and cache apply; neither key is sent to the browser.
+
+## Photograph and certificate editing
+
+Selecting an image opens a preview with crop presets and position controls, rotate, horizontal flip, brightness, size and quality controls. Existing uploaded images have an Edit image action. Images up to 20 MB can be prepared locally; exports are resized to at most 2400 pixels and compressed to WebP before upload. The preview displays the original and prepared sizes. Click Upload file, then Save entry. Upload progress and retryable errors are shown; pending images prevent saving an incomplete entry. PDFs up to 5 MB can be selected and replaced, but the image editor does not edit PDF contents.
