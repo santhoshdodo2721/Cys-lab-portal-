@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 import { User, Project, Cve, Achievement } from './models.js';
 import { schemas } from './validation.js';
 import { registerUploads } from './uploads.js';
+import { registerTranslation } from './translation.js';
 
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be at least 32 characters');
 const app = express();
@@ -18,6 +19,7 @@ app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', credentials: true }));
 app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
+registerTranslation(app);
 const cookie = { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production', maxAge: 8 * 60 * 60 * 1000, path: '/' };
 
 function auth(req, res, next) {

@@ -77,4 +77,16 @@ See [MongoDB Atlas application connection setup](https://www.mongodb.com/docs/at
 
 ## Achievement attachments and custom values
 
-Project guides support an optional qualification. Achievement event names can reuse an existing event name or use Custom; ranks support I, II, III and custom text. Photographs accept PNG, JPEG and WebP. Each member can optionally upload a certificate as a PDF or supported image, up to 5 MB per file. Files are stored in MongoDB GridFS (`attachments.files` and `attachments.chunks`), uploaded only by admins, and readable by visitors through the API. Include these collections in database backups. Removing a file from a form removes its reference; the stored upload is retained.
+Project guides support an optional qualification. Achievement event names are typed directly; event types and ranks support predefined options and custom text. Photographs accept PNG, JPEG and WebP. Each member can optionally upload a certificate as a PDF or supported image, up to 5 MB per file. Files are stored in MongoDB GridFS (`attachments.files` and `attachments.chunks`), uploaded only by admins, and readable by visitors through the API. Include these collections in database backups. Removing a file from a form removes its reference; the stored upload is retained.
+
+## Portal translation
+
+The header language selector translates interface text, descriptions, and newly opened dialogs using Google Cloud Translation. Original database records, form input values, URLs, and CVE identifiers remain unchanged. The preference is saved locally; English is always available. Indian languages supported by the configured NMT language list and Korean are included; this is not a claim of support for every regional language or dialect (Kashmiri, Bodo and Santali are absent from the provider list used here).
+
+Enable the Google Cloud Translation API in a project with billing, then set `GOOGLE_TRANSLATE_API_KEY` in the root `.env` for Docker or `server/.env` for local development. Restrict the key to the Translation API. Recreate the server after changing configuration. The key stays on the server. Displayed text is sent to Google when a non-English language is selected; input values and passwords are excluded. Without a key, the selector shows an explicit unavailable message and keeps original text.
+
+Requests are batched, cached in memory, rate limited, and capped by `TRANSLATION_DAILY_CHARACTER_LIMIT` (250,000 uncached characters per server process per UTC day by default). This application limit is not a substitute for provider quotas or billing controls. Check [supported languages](https://docs.cloud.google.com/translate/docs/languages) and [API setup](https://docs.cloud.google.com/translate/docs/setup).
+
+### Gemini alternative
+
+Create an API key in [Google AI Studio](https://aistudio.google.com/apikey), set `GEMINI_API_KEY` in the root `.env` (Docker) or `server/.env` (local), and recreate the server. Gemini takes priority over Cloud Translation when both keys are present. `GEMINI_TRANSLATION_MODEL` defaults to `gemini-3.1-flash-lite` and can be changed to a compatible model available to your account. Translation quality varies across regional languages. The same request limits and cache apply; neither key is sent to the browser.
