@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Award, BookOpen, Check, ChevronRight, CircleAler
 import './style.css';
 import UploadField from './UploadField.jsx';
 import { translatedJsx, LanguageSelector, TranslationProvider } from './translation.jsx';
+import LandingAnimationCanvas from './LandingAnimationCanvas.jsx';
 
 const tabs = [
   { key: 'projects', label: 'Projects', icon: Code2, singular: 'Project' },
@@ -76,14 +77,23 @@ function Login({ onLogin, onBack, onNavigate, landing = false }) {
     } catch (err) { setError(err.message); }
     finally { setBusy(false); }
   };
-  return <div className="login-page">
-    <img className="login-background-logo" src="/incognitrix-emblem.png" alt="" aria-hidden="true"/>
+  return <div className={`login-page${landing ? " landing-page-active" : ""}`}>
+    {landing ? (
+      <LandingAnimationCanvas />
+    ) : (
+      <img className="login-background-logo" src="/incognitrix-emblem.png" alt="" aria-hidden="true"/>
+    )}
     <PublicHeader/>
     <PublicNavigation onNavigate={onNavigate}/>
     <main className={`login-main${landing ? " public-landing-main" : ""}`}>
       <div className="login-context">
-        <img className="login-context-logo" src="/incognitrix-emblem.png" alt="Cyber Research Lab emblem"/>
-        <span className="login-context-label">SIET Cloud Computing and Cyber Security Research Lab</span>
+        <div className="landing-emblem-container">
+          <div className="landing-emblem-halo" />
+          <img className="login-context-logo landing-animated-logo" src="/incognitrix-emblem.png" alt="Cyber Research Lab emblem"/>
+        </div>
+        <span className="login-context-label">
+          SIET Cloud Computing and Cyber Security Research Lab
+        </span>
         <h1 className="lab-name">Cyber Research Lab</h1>
         <p>Projects, vulnerability reports, and competition results from our student teams at Sri Shakthi Institute of Engineering and Technology.</p>
       </div>
