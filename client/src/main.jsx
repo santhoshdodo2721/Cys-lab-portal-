@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ArrowLeft, ArrowRight, Award, BookOpen, Check, ChevronRight, CircleAlert, Code2, ExternalLink, Github, GripVertical, LockKeyhole, LogOut, Plus, Radar, Shield, ShieldCheck, Search, Trash2, Users, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Award, BookOpen, Check, ChevronRight, CircleAlert, Code2, ExternalLink, Github, GripVertical, LockKeyhole, LogOut, Newspaper, Plus, Radar, Shield, ShieldCheck, Search, Trash2, Users, X } from 'lucide-react';
 import './style.css';
 import UploadField from './UploadField.jsx';
 import { translatedJsx, LanguageSelector, TranslationProvider } from './translation.jsx';
@@ -20,7 +20,7 @@ const tabs = [
 ];
 const initial = { projects: [], cves: [], achievements: [] };
 const empty = {
-  projects: { name: '', shortDescription: '', fullDescription: '', domain: '', techStack: '', ip: '', githubUrl: '', teamName: '', members: [{ name: '', linkedinUrl: '' }], guide: { name: '', qualification: '', profileUrl: '' }, guides: [{ name: '', qualification: '', profileUrl: '' }] },
+  projects: { name: '', shortDescription: '', fullDescription: '', domain: '', techStack: '', ip: '', githubUrl: '', teamName: '', members: [{ name: '', linkedinUrl: '' }], guide: { name: '', qualification: '', profileUrl: '' }, guides: [{ name: '', qualification: '', profileUrl: '' }], additionalMedia: '', mediaLinks: [] },
   cves: { applicationName: '', cveNumber: '', shortDescription: '', fullDescription: '', githubUrl: '', members: [{ name: '', linkedinUrl: '' }] },
   achievements: { photographUrl: '', eventName: '', eventType: 'CTF', prize: '', place: 1, description: '', members: [{ name: '', profileUrl: '' }] }
 };
@@ -129,6 +129,11 @@ function Card({ kind, item, serialNumber, isDraggable, isDragging, isDragOver, o
             `${item.members?.length || 0} ${(item.members?.length || 0) === 1 ? 'contributor' : 'contributors'}`
           )}
         </span>
+        {kind === 'projects' && (item.additionalMedia || (item.mediaLinks && item.mediaLinks.length > 0)) && (
+          <span className="card-media-badge" title={item.mediaLinks?.length ? `${item.mediaLinks.length} media report(s)` : "Additional media coverage"}>
+            <Newspaper size={12}/> {item.mediaLinks?.length ? `${item.mediaLinks.length} media` : 'Media'}
+          </span>
+        )}
         {item.githubUrl && (
           <a
             className="card-repo-link"
@@ -208,6 +213,38 @@ function DetailModal({ kind, item, serialNumber, onClose, onEdit, onDelete, admi
                   <MemberList members={guides} title={guides.length > 1 ? "Project Guides" : "Project Guide"}/>
                 ) : null;
               })()}
+              {(item.additionalMedia || (item.mediaLinks && item.mediaLinks.length > 0)) && (
+                <section className="detail-section detail-media-section">
+                  <h3><Newspaper size={17}/> Additional media information</h3>
+                  {item.additionalMedia && (
+                    <p className="detail-media-text">{item.additionalMedia}</p>
+                  )}
+                  {item.mediaLinks && item.mediaLinks.length > 0 && (
+                    <div className="media-links-grid">
+                      {item.mediaLinks.map((media, idx) => (
+                        <div className="media-link-card" key={idx}>
+                          <div className="media-link-header">
+                            <span className="media-link-title">{media.title || "Media coverage"}</span>
+                            {media.platform && <span className="media-platform-tag">{media.platform}</span>}
+                          </div>
+                          {media.description && <p className="media-link-desc">{media.description}</p>}
+                          {media.url && (
+                            <a
+                              className="external-link media-url-link"
+                              href={formatExternalUrl(media.url)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <span>{media.url}</span>
+                              <ExternalLink size={13}/>
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
             </>
           )}
           {isCve && (
@@ -263,6 +300,10 @@ function AdminForm({ kind, record, onClose, onSaved, eventNames = [] }) {
       members: record.members?.length
         ? record.members
         : (record.teamName ? [] : [{ name: '', [kind === 'achievements' ? 'profileUrl' : 'linkedinUrl']: '' }]),
+      additionalMedia: record.additionalMedia || '',
+      mediaLinks: record.mediaLinks?.length
+        ? record.mediaLinks.map(m => ({ title: m.title || '', url: m.url || '', platform: m.platform || '', description: m.description || '' }))
+        : [],
       ...(kind === 'achievements' ? { eventType: record.eventType || '', place: record.place ?? '' } : {})
     };
   });
@@ -275,6 +316,7 @@ function AdminForm({ kind, record, onClose, onSaved, eventNames = [] }) {
   const memberKey = kind === 'achievements' ? 'profileUrl' : 'linkedinUrl';
   const updateMember = (index, key, value) => setForm(f => ({ ...f, members: f.members.map((m, i) => i === index ? { ...m, [key]: value } : m) }));
   const updateGuide = (index, key, value) => setForm(f => ({ ...f, guides: (f.guides || []).map((g, i) => i === index ? { ...g, [key]: value } : g) }));
+  const updateMediaLink = (index, key, value) => setForm(f => ({ ...f, mediaLinks: (f.mediaLinks || []).map((m, i) => i === index ? { ...m, [key]: value } : m) }));
   const submit = async e => {
     e.preventDefault();
     setBusy(true);
@@ -296,6 +338,13 @@ function AdminForm({ kind, record, onClose, onSaved, eventNames = [] }) {
         throw new Error(kind === 'projects' ? 'Please provide either a team name or at least one team member.' : 'Please add at least one member with a name.');
       }
 
+      const validMediaLinks = (form.mediaLinks || []).filter(m => m && ((m.title && m.title.trim()) || (m.url && m.url.trim()))).map(m => ({
+        title: m.title?.trim() || m.url?.trim() || 'Media report',
+        url: m.url?.trim() || '',
+        platform: m.platform?.trim() || '',
+        description: m.description?.trim() || ''
+      }));
+
       const payload = {
         ...form,
         members: validMembers,
@@ -303,7 +352,9 @@ function AdminForm({ kind, record, onClose, onSaved, eventNames = [] }) {
           teamName: form.teamName?.trim() || '',
           techStack: typeof form.techStack === 'string' ? form.techStack.split(',').map(x => x.trim()).filter(Boolean) : (form.techStack || []),
           guides: validGuides,
-          guide: validGuides[0] || undefined
+          guide: validGuides[0] || undefined,
+          additionalMedia: form.additionalMedia?.trim() || '',
+          mediaLinks: validMediaLinks
         } : {})
       };
       delete payload._id;
@@ -456,6 +507,57 @@ function AdminForm({ kind, record, onClose, onSaved, eventNames = [] }) {
                       aria-label="Remove guide"
                       disabled={(form.guides || []).length <= 1}
                       onClick={() => set('guides', (form.guides || []).filter((_, n) => n !== i))}
+                    >
+                      <X size={17}/>
+                    </button>
+                  </div>
+                ))}
+                <div className="repeater-head" style={{ marginTop: '22px' }}>
+                  <h3>Additional media information <span className="sub-tag">(optional)</span></h3>
+                  <button
+                    type="button"
+                    className="text-button accent"
+                    onClick={() => set('mediaLinks', [...(form.mediaLinks || []), { title: '', url: '', platform: '', description: '' }])}
+                  >
+                    <Plus size={16}/> Add media link / report
+                  </button>
+                </div>
+                <TextArea
+                  label="Information posted on various sites & reports (optional)"
+                  value={form.additionalMedia}
+                  onChange={v => set('additionalMedia', v)}
+                  required={false}
+                  placeholder="Summary of external coverage, articles, reports, or details posted across various sites..."
+                />
+                {(form.mediaLinks || []).map((m, i) => (
+                  <div className="member-form-row media-form-row" key={i}>
+                    <Field
+                      label={`Media #${i + 1} title / site name`}
+                      value={m.title}
+                      onChange={v => updateMediaLink(i, 'title', v)}
+                      required={false}
+                      placeholder="e.g. Featured in TechPortal / Project Report"
+                    />
+                    <Field
+                      label="Report / site URL"
+                      type="url"
+                      value={m.url}
+                      onChange={v => updateMediaLink(i, 'url', v)}
+                      required={false}
+                      placeholder="https://..."
+                    />
+                    <Field
+                      label="Platform (optional)"
+                      value={m.platform}
+                      onChange={v => updateMediaLink(i, 'platform', v)}
+                      required={false}
+                      placeholder="e.g. Medium / News / Blog / Report"
+                    />
+                    <button
+                      type="button"
+                      className="icon-button remove-member"
+                      aria-label="Remove media item"
+                      onClick={() => set('mediaLinks', form.mediaLinks.filter((_, n) => n !== i))}
                     >
                       <X size={17}/>
                     </button>

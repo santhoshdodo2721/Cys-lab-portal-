@@ -17,6 +17,19 @@ const guidesSchema = z.preprocess(v => {
   return [];
 }, z.array(guide).max(10).optional().default([]));
 const profile = z.object({ name: clean(120), certificateUrl: attachment, profileUrl: optionalUrl(linkedin) });
+const genericUrl = z.string().trim().max(500).refine(s => /^https?:\/\//i.test(s), 'Use an HTTP or HTTPS URL');
+const optionalGenericUrl = z.preprocess(value => typeof value === 'string' && !value.trim() ? undefined : value, genericUrl.optional().transform(value => value ?? ''));
+const mediaItemSchema = z.object({
+  title: clean(200).or(z.literal('')).optional().default(''),
+  url: optionalGenericUrl,
+  platform: clean(100).or(z.literal('')).optional().default(''),
+  description: clean(500).or(z.literal('')).optional().default('')
+});
+const mediaLinksSchema = z.preprocess(v => {
+  if (Array.isArray(v)) return v.filter(m => m && typeof m === 'object' && ((m.title && String(m.title).trim()) || (m.url && String(m.url).trim())));
+  return [];
+}, z.array(mediaItemSchema).max(20).optional().default([]));
+
 export const schemas = {
   projects: z.object({
     name: clean(160),
@@ -32,7 +45,9 @@ export const schemas = {
     }, z.array(person).max(100).optional().default([])),
     guide: optionalGuide,
     guides: guidesSchema,
-    order: z.number().int().optional().default(0)
+    order: z.number().int().optional().default(0),
+    additionalMedia: z.string().trim().max(3000).refine(s => !/[<>\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(s), 'HTML and unsupported control characters are not allowed').optional().default(''),
+    mediaLinks: mediaLinksSchema
   }).refine(
     data => (data.teamName && data.teamName.trim().length > 0) || (data.members && data.members.length > 0),
     'Provide either a team name or at least one team member.'

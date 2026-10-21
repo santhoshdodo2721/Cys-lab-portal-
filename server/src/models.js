@@ -9,6 +9,12 @@ const member = new mongoose.Schema({
   qualification: optionalText(160),
   certificateUrl: optionalText(100)
 }, { _id: false });
+const mediaItem = new mongoose.Schema({
+  title: optionalText(200),
+  url: optionalText(500),
+  platform: optionalText(100),
+  description: optionalText(500)
+}, { _id: false });
 const options = { timestamps: true, versionKey: false };
 const contentOptions = { ...options, strict: 'throw' };
 const members = { type: [member], default: [] };
@@ -32,7 +38,9 @@ const projectSchema = new mongoose.Schema({
   members,
   guide: { type: member, default: null },
   guides: { type: [member], default: [] },
-  order: { type: Number, default: 0 }
+  order: { type: Number, default: 0 },
+  additionalMedia: optionalText(3000),
+  mediaLinks: { type: [mediaItem], default: [] }
 }, contentOptions);
 
 const cveSchema = new mongoose.Schema({

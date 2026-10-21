@@ -119,3 +119,47 @@ test('project schema rejects project when neither teamName nor members are provi
   assert.equal(result.success, false);
   assert.match(result.error.issues[0].message, /Provide either a team name or at least one team member/);
 });
+
+test('project schema accepts optional additionalMedia and mediaLinks with URLs', () => {
+  const result = schemas.projects.safeParse({
+    name: 'Autonomous Cyber Defense System',
+    fullDescription: 'Real-time detection and automated network hardening agent.',
+    domain: 'Offensive & Defensive Security',
+    teamName: 'Cyber Sentinel Group',
+    members: [],
+    additionalMedia: 'Published in National Tech Symposium 2026 and featured on InfoSec Digest.',
+    mediaLinks: [
+      {
+        title: 'Project Featured on InfoSec Digest',
+        url: 'https://infosecdigest.example.com/articles/cyber-sentinel',
+        platform: 'News',
+        description: 'Comprehensive review of our automated defense algorithms.'
+      },
+      {
+        title: 'Symposium Technical Report',
+        url: 'https://symposium.example.org/reports/cyber-defense-2026.pdf',
+        platform: 'Report',
+        description: 'Peer-reviewed technical whitepaper.'
+      }
+    ]
+  });
+  assert.equal(result.success, true);
+  assert.equal(result.data.additionalMedia, 'Published in National Tech Symposium 2026 and featured on InfoSec Digest.');
+  assert.equal(result.data.mediaLinks.length, 2);
+  assert.equal(result.data.mediaLinks[0].title, 'Project Featured on InfoSec Digest');
+  assert.equal(result.data.mediaLinks[0].url, 'https://infosecdigest.example.com/articles/cyber-sentinel');
+  assert.equal(result.data.mediaLinks[1].platform, 'Report');
+});
+
+test('project schema handles omitted or empty additionalMedia and mediaLinks gracefully', () => {
+  const result = schemas.projects.safeParse({
+    name: 'Simple Utility Tool',
+    fullDescription: 'Internal log inspection CLI.',
+    domain: 'DevSecOps',
+    members: [{ name: 'Engineer A' }]
+  });
+  assert.equal(result.success, true);
+  assert.equal(result.data.additionalMedia, '');
+  assert.deepEqual(result.data.mediaLinks, []);
+});
+
