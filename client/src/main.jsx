@@ -707,6 +707,7 @@ function App() {
   };
 
   const handleReorder = async (sourceId, targetId) => {
+    if (user?.role !== 'admin') return;
     const currentList = [...data[tab]];
     const sourceIndex = currentList.findIndex(x => x._id === sourceId);
     const targetIndex = currentList.findIndex(x => x._id === targetId);
@@ -717,19 +718,18 @@ function App() {
 
     setData(d => ({ ...d, [tab]: currentList }));
 
-    if (user?.role === 'admin') {
-      try {
-        await api(`/${tab}/reorder`, {
-          method: 'PUT',
-          body: JSON.stringify({ ids: currentList.map(x => x._id) })
-        });
-      } catch (err) {
-        console.error('Failed to persist order:', err);
-      }
+    try {
+      await api(`/${tab}/reorder`, {
+        method: 'PUT',
+        body: JSON.stringify({ ids: currentList.map(x => x._id) })
+      });
+    } catch (err) {
+      console.error('Failed to persist order:', err);
     }
   };
 
   const removeRecord = async item => {
+    if (user?.role !== 'admin') return;
     if (!window.confirm(`Delete ${tab === 'projects' ? item.name : tab === 'cves' ? item.cveNumber : item.eventName}? This cannot be undone.`)) return;
     try {
       await api(`/${tab}/${item._id}`, { method: 'DELETE' });
@@ -750,6 +750,8 @@ function App() {
   if (adminPage && !adminLogin && user === undefined) return <div className="boot"><ShieldCheck size={35}/> Loading Lab Portal…</div>;
   if (adminPage && (adminLogin || user?.role !== 'admin')) return <Login onNavigate={navigate} onLogin={account => { setUser(account); navigate('/lab-portal/admin/dashboard'); }} onBack={() => navigate('/')}/>;
 
+  const isAdmin = user?.role === 'admin';
+  const canReorder = isAdmin && !query;
   const current = tabs.find(t => t.key === tab);
   const visibleItems = data[tab].filter(item => [item.name, item.applicationName, item.cveNumber, item.eventName, item.shortDescription, item.description, item.domain, item.eventType].some(value => String(value || '').toLowerCase().includes(query.toLowerCase())));
   if (tab === 'cves') visibleItems.sort((a, b) => {
@@ -789,7 +791,7 @@ function App() {
               <h1>{current.label}</h1>
               <p>{tab === 'projects' ? 'Student-built tools and experiments from the lab.' : tab === 'cves' ? 'Documented vulnerability research and technical write-ups.' : 'Competition results and milestones earned by lab teams.'}</p>
             </div>
-            {adminPage && user?.role === 'admin' && (
+            {isAdmin && (
               <div className="heading-actions">
                 <button className="button secondary manage-button" onClick={() => setManage(true)}>Manage entries</button>
                 <button className="button primary add-button" onClick={() => setEditing({})}><Plus size={17}/> Add {current.singular}</button>
@@ -804,7 +806,7 @@ function App() {
               <span className="collection-icon"><current.icon size={18}/></span>
               <div>
                 <strong>{current.label} archive</strong>
-                <small>{data[tab].length} published {data[tab].length === 1 ? "entry" : "entries"}{!query ? " · Drag & drop to arrange order" : ""}</small>
+                <small>{data[tab].length} published {data[tab].length === 1 ? "entry" : "entries"}{canReorder ? " · Drag & drop to arrange order" : ""}</small>
               </div>
             </div>
             <div className="collection-controls">
@@ -838,27 +840,27 @@ function App() {
                     kind={tab}
                     item={item}
                     serialNumber={serialNumber}
-                    isDraggable={!query}
-                    isDragging={draggedId === item._id}
-                    isDragOver={dragOverId === item._id}
-                    onDragStart={e => {
+                    isDraggable={canReorder}
+                    isDragging={canReorder && draggedId === item._id}
+                    isDragOver={canReorder && dragOverId === item._id}
+                    onDragStart={canReorder ? (e => {
                       e.dataTransfer.setData('text/plain', item._id);
                       e.dataTransfer.effectAllowed = 'move';
                       setDraggedId(item._id);
-                    }}
-                    onDragEnd={() => {
+                    }) : undefined}
+                    onDragEnd={canReorder ? (() => {
                       setDraggedId(null);
                       setDragOverId(null);
-                    }}
-                    onDragOver={e => {
+                    }) : undefined}
+                    onDragOver={canReorder ? (e => {
                       e.preventDefault();
                       e.dataTransfer.dropEffect = 'move';
                       if (dragOverId !== item._id) setDragOverId(item._id);
-                    }}
-                    onDragLeave={() => {
+                    }) : undefined}
+                    onDragLeave={canReorder ? (() => {
                       if (dragOverId === item._id) setDragOverId(null);
-                    }}
-                    onDrop={e => {
+                    }) : undefined}
+                    onDrop={canReorder ? (e => {
                       e.preventDefault();
                       const sourceId = e.dataTransfer.getData('text/plain') || draggedId;
                       if (sourceId && sourceId !== item._id) {
@@ -866,7 +868,7 @@ function App() {
                       }
                       setDraggedId(null);
                       setDragOverId(null);
-                    }}
+                    }) : undefined}
                     onClick={() => setDetail(item)}
                   />
                 );
@@ -877,7 +879,7 @@ function App() {
               <div className="empty-icon"><BookOpen size={27}/></div>
               <h3>{query ? "No matching entries" : `No ${current.label.toLowerCase()} uploaded yet`}</h3>
               <p>{query ? "Try a different search term." : "Check back soon for new work from the lab."}</p>
-              {adminPage && user?.role === 'admin' && <button className="button primary" onClick={() => setEditing({})}><Plus size={16}/> Add first {current.singular}</button>}
+              {isAdmin && <button className="button primary" onClick={() => setEditing({})}><Plus size={16}/> Add first {current.singular}</button>}
             </div>
           )}
           <footer className="main-footer">
@@ -885,7 +887,7 @@ function App() {
           </footer>
         </div>
       </main>
-      {manage && adminPage && user?.role === 'admin' && (
+      {manage && isAdmin && (
         <ManagePanel
           kind={tab}
           items={data[tab]}
@@ -905,12 +907,12 @@ function App() {
             return idx !== -1 ? idx + 1 : 1;
           })()}
           onClose={() => setDetail(null)}
-          admin={adminPage && user?.role === 'admin'}
+          admin={isAdmin}
           onEdit={() => { setEditing(detail); setDetail(null); }}
           onDelete={remove}
         />
       )}
-      {editing && adminPage && user?.role === 'admin' && (
+      {editing && isAdmin && (
         <AdminForm
           eventNames={data.achievements.map(item => item.eventName)}
           kind={tab}
