@@ -28,8 +28,11 @@ const projectSchema = new mongoose.Schema({
   techStack: { type: [String], default: [] },
   ip: optionalText(100),
   githubUrl: optionalText(500),
+  teamName: optionalText(160),
   members,
-  guide: { type: member, required: true }
+  guide: { type: member, default: null },
+  guides: { type: [member], default: [] },
+  order: { type: Number, default: 0 }
 }, contentOptions);
 
 const cveSchema = new mongoose.Schema({
@@ -38,7 +41,8 @@ const cveSchema = new mongoose.Schema({
   shortDescription: optionalText(240),
   fullDescription: text(5000, true),
   githubUrl: optionalText(500),
-  members
+  members,
+  order: { type: Number, default: 0 }
 }, contentOptions);
 
 const achievementSchema = new mongoose.Schema({
@@ -48,10 +52,11 @@ const achievementSchema = new mongoose.Schema({
   place: { type: mongoose.Schema.Types.Mixed, required: true },
   description: text(5000, true),
   photographUrl: optionalText(100),
-  members
+  members,
+  order: { type: Number, default: 0 }
 }, contentOptions);
 
-for (const schema of [projectSchema, cveSchema, achievementSchema]) schema.index({ createdAt: -1 });
+for (const schema of [projectSchema, cveSchema, achievementSchema]) schema.index({ order: 1, createdAt: -1 });
 cveSchema.index({ cveNumber: 1 });
 
 export const User = mongoose.model('User', userSchema);

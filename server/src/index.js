@@ -67,7 +67,24 @@ app.get('/api/events', (req, res) => {
 app.get('/api/:kind', async (req, res) => {
   const Model = collections[req.params.kind];
   if (!Model) return res.status(404).json({ error: 'Unknown collection.' });
-  res.json(await Model.find().sort({ createdAt: -1 }).lean());
+  res.json(await Model.find().sort({ order: 1, createdAt: -1 }).lean());
+});
+app.put('/api/:kind/reorder', auth, admin, async (req, res) => {
+  const Model = collections[req.params.kind];
+  if (!Model) return res.status(404).json({ error: 'Unknown collection.' });
+  const { ids } = req.body || {};
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids must be an array of IDs.' });
+  const bulkOps = ids.filter(id => mongoose.isValidObjectId(id)).map((id, index) => ({
+    updateOne: {
+      filter: { _id: id },
+      update: { $set: { order: index } }
+    }
+  }));
+  if (bulkOps.length > 0) {
+    await Model.bulkWrite(bulkOps);
+    publish(req.params.kind);
+  }
+  res.json({ ok: true });
 });
 app.post('/api/:kind', auth, admin, async (req, res) => {
   const Model = collections[req.params.kind], schema = schemas[req.params.kind];
